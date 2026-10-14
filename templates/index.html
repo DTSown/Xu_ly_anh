@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comic Panel Segmentation - Demo</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --fg:#1d2330; --muted:#667085; --acc:#d6336c; --line:#e3e6eb; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14171c; --card:#1d2128; --fg:#eceff4; --muted:#9aa4b2; --line:#2c323c; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.5 system-ui,sans-serif; }
+  main { max-width:1100px; margin:0 auto; padding:24px 16px 60px; }
+  h1 { font-size:22px; margin:0 0 4px; } p.sub { color:var(--muted); margin:0 0 20px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:16px; }
+  form { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); align-items:end; }
+  label { display:block; font-size:13px; color:var(--muted); margin-bottom:4px; }
+  input[type=file], input[type=range] { width:100%; }
+  .chk { display:flex; gap:8px; align-items:center; color:var(--fg); }
+  button { background:var(--acc); color:#fff; border:0; border-radius:8px; padding:10px 18px; font-size:15px; cursor:pointer; }
+  .err { background:#fdecea; color:#a12622; border:1px solid #f5c2c0; padding:10px 14px; border-radius:8px; margin-bottom:16px; }
+  .grid { display:grid; gap:12px; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); }
+  figure { margin:0; } figcaption { font-size:12px; color:var(--muted); margin-top:4px; }
+  img { max-width:100%; border:1px solid var(--line); border-radius:6px; background:#fff; display:block; }
+  .big img { width:100%; }
+  .stat { display:flex; gap:24px; flex-wrap:wrap; margin-bottom:12px; }
+  .stat b { font-size:22px; display:block; } .stat span { color:var(--muted); font-size:12px; }
+  code { font-size:12px; color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Tu dong tach khung truyen tranh</h1>
+  <p class="sub">Xu ly anh so tu cai dat (NumPy): xam, Gauss, Otsu, Closing, gan nhan lien thong.</p>
+
+  {% if error %}<div class="err">{{ error }}</div>{% endif %}
+
+  <div class="card">
+    <form method="post" enctype="multipart/form-data">
+      <div style="grid-column:1/-1"><label>Trang truyen (png, jpg, bmp, toi da 20MB)</label>
+        <input type="file" name="image" accept="image/*" required></div>
+      <div><label>Sigma Gauss: <span id="sv">{{ params.sigma }}</span></label>
+        <input type="range" name="sigma" min="0.5" max="4" step="0.1" value="{{ params.sigma }}"
+               oninput="sv.textContent=this.value"></div>
+      <div><label>Kich thuoc Closing (px): <span id="cv">{{ params.close_px }}</span></label>
+        <input type="range" name="close_px" min="1" max="60" step="1" value="{{ params.close_px }}"
+               oninput="cv.textContent=this.value"></div>
+      <div class="chk"><input type="checkbox" id="b" name="use_blur" {% if params.use_blur %}checked{% endif %}>
+        <label for="b" style="margin:0;color:inherit">Bat loc Gauss</label></div>
+      <div class="chk"><input type="checkbox" id="c" name="use_closing" {% if params.use_closing %}checked{% endif %}>
+        <label for="c" style="margin:0;color:inherit">Bat Closing</label></div>
+      <div><button type="submit">Tach khung</button></div>
+    </form>
+  </div>
+
+  {% if result %}
+  <div class="card">
+    <div class="stat">
+      <div><b>{{ result.n }}</b><span>panel phat hien</span></div>
+      <div><b>{{ '%.2f'|format(result.time) }}s</b><span>thoi gian pipeline</span></div>
+    </div>
+    <div class="big">
+      <figure><img src="/files/{{ result.token }}/5_result.png" alt="ket qua">
+        <figcaption>Ket qua: khung do la cac panel duoc phat hien</figcaption></figure>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Cac buoc xu ly</h3>
+    <div class="grid">
+      {% for fn, title in result.steps[:4] %}
+      <figure><img src="/files/{{ result.token }}/{{ fn }}" alt="{{ title }}"><figcaption>{{ title }}</figcaption></figure>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Cac panel da cat (theo thu tu doc)</h3>
+    {% if result.panels %}
+    <div class="grid">
+      {% for p in result.panels %}
+      <figure><a href="/files/{{ result.token }}/panels/{{ p }}" download>
+        <img src="/files/{{ result.token }}/panels/{{ p }}" alt="{{ p }}"></a>
+        <figcaption>{{ p }} <code>{{ result.boxes[loop.index0] }}</code></figcaption></figure>
+      {% endfor %}
+    </div>
+    {% else %}<p>Khong tim thay panel nao. Thu giam/tang kich thuoc Closing.</p>{% endif %}
+  </div>
+  {% endif %}
+</main>
+</body>
+</html>

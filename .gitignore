@@ -1,0 +1,19 @@
+# Python environments and caches
+.venv/
+.uv-cache/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local tools and generated outputs
+.tools/
+output/
+output_real/
+web_output/
+tests/tmp_cases/
+
+# Editor and OS metadata
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
