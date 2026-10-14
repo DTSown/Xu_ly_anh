@@ -12,6 +12,14 @@ output_real/
 web_output/
 tests/tmp_cases/
 
+# Local tests, datasets, reports, and evaluation utilities
+tests/
+test_cases/
+docs/
+evaluate.py
+experiments.py
+generate_test_cases.py
+
 # Editor and OS metadata
 .vscode/
 .idea/
