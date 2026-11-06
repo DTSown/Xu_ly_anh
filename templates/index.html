@@ -3,89 +3,336 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Comic Panel Segmentation - Demo</title>
+<title>Tách Khung Truyện Tranh - Demo</title>
 <style>
-  :root { --bg:#f6f7f9; --card:#fff; --fg:#1d2330; --muted:#667085; --acc:#d6336c; --line:#e3e6eb; }
+  :root {
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --fg: #0f172a;
+    --muted: #64748b;
+    --acc: #e11d48;
+    --acc-hover: #be123c;
+    --line: #e2e8f0;
+    --input-bg: #f1f5f9;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+  }
   @media (prefers-color-scheme: dark) {
-    :root { --bg:#14171c; --card:#1d2128; --fg:#eceff4; --muted:#9aa4b2; --line:#2c323c; }
+    :root {
+      --bg: #0b0f19;
+      --card: #111827;
+      --fg: #f8fafc;
+      --muted: #94a3b8;
+      --acc: #f43f5e;
+      --acc-hover: #e11d48;
+      --line: #1e293b;
+      --input-bg: #1e293b;
+    }
   }
   * { box-sizing: border-box; }
-  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.5 system-ui,sans-serif; }
-  main { max-width:1100px; margin:0 auto; padding:24px 16px 60px; }
-  h1 { font-size:22px; margin:0 0 4px; } p.sub { color:var(--muted); margin:0 0 20px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:16px; }
-  form { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); align-items:end; }
-  label { display:block; font-size:13px; color:var(--muted); margin-bottom:4px; }
-  input[type=file], input[type=range] { width:100%; }
-  .chk { display:flex; gap:8px; align-items:center; color:var(--fg); }
-  button { background:var(--acc); color:#fff; border:0; border-radius:8px; padding:10px 18px; font-size:15px; cursor:pointer; }
-  .err { background:#fdecea; color:#a12622; border:1px solid #f5c2c0; padding:10px 14px; border-radius:8px; margin-bottom:16px; }
-  .grid { display:grid; gap:12px; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); }
-  figure { margin:0; } figcaption { font-size:12px; color:var(--muted); margin-top:4px; }
-  img { max-width:100%; border:1px solid var(--line); border-radius:6px; background:#fff; display:block; }
-  .big img { width:100%; }
-  .stat { display:flex; gap:24px; flex-wrap:wrap; margin-bottom:12px; }
-  .stat b { font-size:22px; display:block; } .stat span { color:var(--muted); font-size:12px; }
-  code { font-size:12px; color:var(--muted); }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 15px/1.6 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 1080px; margin: 0 auto; padding: 32px 20px 64px; }
+  
+  /* Header */
+  header { margin-bottom: 24px; }
+  h1 { font-size: 24px; font-weight: 700; margin: 0 0 6px; letter-spacing: -0.02em; }
+  p.sub { color: var(--muted); margin: 0; font-size: 14px; }
+  h3 { font-size: 16px; font-weight: 600; margin: 0 0 16px; display: flex; align-items: center; gap: 8px; }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+
+  /* Form Controls */
+  form { display: flex; flex-direction: column; gap: 20px; }
+  .file-drop {
+    border: 2px dashed var(--line);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    background: var(--input-bg);
+    transition: border-color 0.2s;
+  }
+  .file-drop:hover { border-color: var(--acc); }
+  .file-drop label { font-weight: 600; color: var(--fg); margin-bottom: 8px; font-size: 14px; cursor: pointer; }
+  input[type=file] {
+    font-size: 14px;
+    color: var(--muted);
+    max-width: 100%;
+  }
+  input[type=file]::file-selector-button {
+    background: var(--card);
+    color: var(--fg);
+    border: 1px solid var(--line);
+    padding: 6px 14px;
+    border-radius: 6px;
+    margin-right: 12px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: 0.15s;
+  }
+  input[type=file]::file-selector-button:hover { border-color: var(--acc); color: var(--acc); }
+
+  .controls-grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    align-items: center;
+  }
+  .control-item label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .control-item label span {
+    color: var(--fg);
+    font-weight: 700;
+    background: var(--input-bg);
+    padding: 1px 8px;
+    border-radius: 4px;
+  }
+  input[type=range] {
+    width: 100%;
+    accent-color: var(--acc);
+    cursor: pointer;
+  }
+  
+  .form-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+  .chk-group { display: flex; gap: 20px; flex-wrap: wrap; }
+  .chk {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .chk input { width: 16px; height: 16px; accent-color: var(--acc); cursor: pointer; margin: 0; }
+  
+  button {
+    background: var(--acc);
+    color: #fff;
+    border: 0;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+  button:hover { background: var(--acc-hover); }
+  button:active { transform: translateY(1px); }
+
+  /* Error Alert */
+  .err {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+
+  /* Results & Stats */
+  .result-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 720px) {
+    .result-layout { grid-template-columns: 1fr; }
+  }
+  .stat-list { display: flex; flex-direction: column; gap: 12px; }
+  .stat-box {
+    background: var(--input-bg);
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+  }
+  .stat-box b { font-size: 26px; font-weight: 700; color: var(--acc); display: block; line-height: 1.2; }
+  .stat-box span { color: var(--muted); font-size: 13px; }
+
+  /* Grids & Images */
+  .grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  }
+  figure {
+    margin: 0;
+    background: var(--input-bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  figure:hover { border-color: var(--muted); }
+  figure img {
+    width: 100%;
+    height: 220px;
+    object-fit: contain;
+    background: #fff;
+    display: block;
+    padding: 6px;
+  }
+  .big figure img {
+    height: auto;
+    max-height: 680px;
+    padding: 8px;
+  }
+  figcaption {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 8px 12px;
+    border-top: 1px solid var(--line);
+    background: var(--card);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+  }
+  code {
+    font-size: 11px;
+    background: var(--input-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--fg);
+  }
+  .empty {
+    color: var(--muted);
+    text-align: center;
+    padding: 32px;
+    background: var(--input-bg);
+    border-radius: 8px;
+    margin: 0;
+  }
 </style>
 </head>
 <body>
 <main>
-  <h1>Tu dong tach khung truyen tranh</h1>
-  <p class="sub">Xu ly anh so tu cai dat (NumPy): xam, Gauss, Otsu, Closing, gan nhan lien thong.</p>
+  <header>
+    <h1>Tự động tách khung truyện tranh</h1>
+    <p class="sub">Xử lý ảnh số tự cài đặt (NumPy): Xám, Gauss, Otsu, Closing, Gán nhãn liên thông.</p>
+  </header>
 
   {% if error %}<div class="err">{{ error }}</div>{% endif %}
 
   <div class="card">
     <form method="post" enctype="multipart/form-data">
-      <div style="grid-column:1/-1"><label>Trang truyen (png, jpg, bmp, toi da 20MB)</label>
-        <input type="file" name="image" accept="image/*" required></div>
-      <div><label>Sigma Gauss: <span id="sv">{{ params.sigma }}</span></label>
-        <input type="range" name="sigma" min="0.5" max="4" step="0.1" value="{{ params.sigma }}"
-               oninput="sv.textContent=this.value"></div>
-      <div><label>Kich thuoc Closing (px): <span id="cv">{{ params.close_px }}</span></label>
-        <input type="range" name="close_px" min="1" max="60" step="1" value="{{ params.close_px }}"
-               oninput="cv.textContent=this.value"></div>
-      <div class="chk"><input type="checkbox" id="b" name="use_blur" {% if params.use_blur %}checked{% endif %}>
-        <label for="b" style="margin:0;color:inherit">Bat loc Gauss</label></div>
-      <div class="chk"><input type="checkbox" id="c" name="use_closing" {% if params.use_closing %}checked{% endif %}>
-        <label for="c" style="margin:0;color:inherit">Bat Closing</label></div>
-      <div><button type="submit">Tach khung</button></div>
+      <div class="file-drop">
+        <label for="file-upload">Chọn trang truyện tranh (PNG, JPG, BMP - tối đa 20MB)</label>
+        <input id="file-upload" type="file" name="image" accept="image/*" required>
+      </div>
+
+      <div class="controls-grid">
+        <div class="control-item">
+          <label>Sigma Gauss <span id="sv">{{ params.sigma }}</span></label>
+          <input type="range" name="sigma" min="0.5" max="4" step="0.1" value="{{ params.sigma }}"
+                 oninput="sv.textContent=this.value">
+        </div>
+        <div class="control-item">
+          <label>Kích thước Closing (px) <span id="cv">{{ params.close_px }}</span></label>
+          <input type="range" name="close_px" min="1" max="60" step="1" value="{{ params.close_px }}"
+                 oninput="cv.textContent=this.value">
+        </div>
+      </div>
+
+      <div class="form-footer">
+        <div class="chk-group">
+          <label class="chk">
+            <input type="checkbox" id="b" name="use_blur" {% if params.use_blur %}checked{% endif %}>
+            Bật lọc Gauss
+          </label>
+          <label class="chk">
+            <input type="checkbox" id="c" name="use_closing" {% if params.use_closing %}checked{% endif %}>
+            Bật Closing
+          </label>
+        </div>
+        <button type="submit">Tách khung ngay</button>
+      </div>
     </form>
   </div>
 
   {% if result %}
   <div class="card">
-    <div class="stat">
-      <div><b>{{ result.n }}</b><span>panel phat hien</span></div>
-      <div><b>{{ '%.2f'|format(result.time) }}s</b><span>thoi gian pipeline</span></div>
-    </div>
-    <div class="big">
-      <figure><img src="/files/{{ result.token }}/5_result.png" alt="ket qua">
-        <figcaption>Ket qua: khung do la cac panel duoc phat hien</figcaption></figure>
+    <h3>Kết quả phát hiện</h3>
+    <div class="result-layout">
+      <div class="stat-list">
+        <div class="stat-box">
+          <b>{{ result.n }}</b>
+          <span>Panel phát hiện được</span>
+        </div>
+        <div class="stat-box">
+          <b>{{ '%.2f'|format(result.time) }}s</b>
+          <span>Thời gian xử lý pipeline</span>
+        </div>
+      </div>
+      <div class="big">
+        <figure>
+          <img src="/files/{{ result.token }}/5_result.png" alt="kết quả">
+          <figcaption>Khung màu đỏ thể hiện các panel được phát hiện</figcaption>
+        </figure>
+      </div>
     </div>
   </div>
 
   <div class="card">
-    <h3 style="margin-top:0">Cac buoc xu ly</h3>
+    <h3>Các bước xử lý trung gian</h3>
     <div class="grid">
       {% for fn, title in result.steps[:4] %}
-      <figure><img src="/files/{{ result.token }}/{{ fn }}" alt="{{ title }}"><figcaption>{{ title }}</figcaption></figure>
+      <figure>
+        <img src="/files/{{ result.token }}/{{ fn }}" alt="{{ title }}">
+        <figcaption>{{ title }}</figcaption>
+      </figure>
       {% endfor %}
     </div>
   </div>
 
   <div class="card">
-    <h3 style="margin-top:0">Cac panel da cat (theo thu tu doc)</h3>
+    <h3>Các panel đã cắt (theo thứ tự đọc)</h3>
     {% if result.panels %}
     <div class="grid">
       {% for p in result.panels %}
-      <figure><a href="/files/{{ result.token }}/panels/{{ p }}" download>
-        <img src="/files/{{ result.token }}/panels/{{ p }}" alt="{{ p }}"></a>
-        <figcaption>{{ p }} <code>{{ result.boxes[loop.index0] }}</code></figcaption></figure>
+      <figure>
+        <a href="/files/{{ result.token }}/panels/{{ p }}" download title="Nhấn để tải ảnh">
+          <img src="/files/{{ result.token }}/panels/{{ p }}" alt="{{ p }}">
+        </a>
+        <figcaption>
+          <span>{{ p }}</span>
+          <code>{{ result.boxes[loop.index0] }}</code>
+        </figcaption>
+      </figure>
       {% endfor %}
     </div>
-    {% else %}<p>Khong tim thay panel nao. Thu giam/tang kich thuoc Closing.</p>{% endif %}
+    {% else %}
+    <p class="empty">Không tìm thấy panel nào. Hãy thử giảm hoặc tăng kích thước Closing.</p>
+    {% endif %}
   </div>
   {% endif %}
 </main>

@@ -11,7 +11,7 @@
 - Closing hình thái học để nối các đường viền bị đứt.
 - Gán nhãn thành phần liên thông 8 bằng thuật toán two-pass và union-find.
 - Lọc bounding box, loại box lồng nhau và sắp xếp theo thứ tự đọc.
-- Nhận diện bổ sung các gutter trắng chéo trên trang truyện có bố cục nghiêng.
+- Nhận diện bổ sung gutter ngang trắng/đen và gutter trắng chéo trên các trang có bố cục khó.
 - Giao diện Flask để tải ảnh lên và xem từng bước xử lý.
 
 Trong `core/` và `pipeline.py`, thuật toán chỉ sử dụng NumPy. OpenCV chỉ được dùng để đọc và ghi ảnh trong `main.py` và `app.py`.
@@ -69,6 +69,46 @@ Start-Process "http://127.0.0.1:5000"
 
 Web hỗ trợ PNG, JPG, JPEG và BMP, giới hạn 20 MB. Kết quả được lưu trong `web_output/`; hệ thống chỉ giữ 20 lần xử lý gần nhất.
 
+## Cách sử dụng các thông số trên giao diện
+
+1. Chọn một ảnh trang truyện tại mục **Trang truyện**.
+2. Điều chỉnh **Sigma Gauss** và **Kích thước Closing** nếu cần.
+3. Chọn bật hoặc tắt bộ lọc Gauss và Closing.
+4. Nhấn **Tách khung** để chạy pipeline và xem các ảnh trung gian cùng những panel đã cắt.
+
+### Sigma Gauss
+
+`Sigma Gauss` quyết định mức làm mượt ảnh trước khi phân ngưỡng Otsu:
+
+- `0.5–1.2`: giữ nhiều chi tiết, phù hợp với ảnh rõ và có đường viền mảnh.
+- `1.3–2.0`: mức phù hợp với phần lớn ảnh; giá trị mặc định là `1.5`.
+- `2.1–4.0`: giảm nhiễu mạnh hơn nhưng có thể làm mất các nét viền mảnh.
+
+Khi bỏ chọn **Bật lọc Gauss**, giá trị Sigma không còn tác dụng.
+
+### Kích thước Closing
+
+`Kích thước Closing (px)` dùng để nối các đoạn viền bị đứt và lấp các khe nhỏ:
+
+- `3–10 px`: dành cho khung rõ hoặc khoảng cách giữa các panel hẹp.
+- `11–25 px`: phù hợp với phần lớn trang truyện; giá trị mặc định là `20 px`.
+- `26–60 px`: hữu ích khi đường viền bị đứt nhiều, nhưng có thể làm các panel dính vào nhau.
+
+Khi bỏ chọn **Bật Closing**, giá trị kích thước Closing không còn tác dụng.
+
+### Điều chỉnh theo kết quả
+
+| Hiện tượng | Cách điều chỉnh |
+|---|---|
+| Phát hiện quá nhiều vùng nhỏ | Tăng Sigma hoặc tăng Closing nhẹ |
+| Thiếu khung do đường viền bị đứt | Tăng Closing |
+| Nhiều panel bị nhập thành một | Giảm Closing |
+| Nét viền mảnh bị mất | Giảm Sigma |
+| Ảnh có nhiều nhiễu hoặc họa tiết vụn | Tăng Sigma |
+| Kết quả xấu hơn sau bước Closing | Bỏ chọn **Bật Closing** để so sánh |
+
+Nên chạy lần đầu với `Sigma = 1.5`, `Closing = 20 px` và bật cả hai bộ lọc. Nếu các panel bị dính, giảm Closing xuống khoảng `8–15 px`; nếu đường viền không khép kín, tăng lên khoảng `25–35 px`.
+
 ## Xử lý một ảnh bằng dòng lệnh
 
 ```powershell
@@ -111,7 +151,7 @@ output/<tên-ảnh>/
 → cắt panel từ ảnh gốc
 ```
 
-Nếu pipeline chuẩn chỉ tìm được từ 2 đến 4 box, hệ thống có thể kích hoạt detector gutter chéo. Detector tìm các dải trắng dài theo mô hình `y = ax + b` và tạo mask polygon cho từng panel.
+Khi các box từ connected components bị thiếu hoặc chồng lấn, hệ thống có thể kích hoạt detector gutter. Detector ngang nhận diện cả dải trắng có đường biên và dải đen dày; detector chéo tìm các dải trắng dài theo mô hình `y = ax + b` và tạo mask polygon cho từng panel.
 
 ## Tham số mặc định
 

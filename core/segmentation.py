@@ -107,6 +107,55 @@ def detect_diagonal_gutters(gray, min_white=0.75, min_edge=0.45):
     return [(a, b) for _, a, b, _ in sorted(selected, key=lambda item: item[3])]
 
 
+def detect_horizontal_gutters(gray, light_mean=230, dark_mean=90):
+    """Tìm các dải phân cách ngang chạy gần hết chiều rộng trang.
+
+    Hai kiểu gutter thường gặp được hỗ trợ:
+
+    - dải trắng đủ cao, có đường biên tối ở cả phía trên và phía dưới;
+    - dải đen dày dùng để ngăn hai panel.
+
+    Điều kiện đường biên giúp tránh nhầm các hàng trắng nằm bên trong một
+    panel ít chi tiết. Trả về các khoảng hàng ``(y0, y1)`` theo thứ tự từ
+    trên xuống dưới.
+    """
+    g = np.asarray(gray, dtype=np.float64)
+    if g.ndim != 2 or min(g.shape) < 16:
+        return []
+    h, _ = g.shape
+    row_mean = g.mean(axis=1)
+
+    def runs(mask):
+        padded = np.r_[False, mask, False].astype(np.int8)
+        delta = np.diff(padded)
+        return zip(np.flatnonzero(delta == 1), np.flatnonzero(delta == -1) - 1)
+
+    gutters = []
+    min_light_height = max(4, int(np.ceil(0.015 * h)))
+    edge_window = max(4, int(np.ceil(0.02 * h)))
+    for y0, y1 in runs(row_mean >= light_mean):
+        if y1 - y0 + 1 < min_light_height or y0 < 0.06 * h or y1 > 0.94 * h:
+            continue
+        above = row_mean[max(0, y0 - edge_window):y0]
+        below = row_mean[y1 + 1:min(h, y1 + edge_window + 1)]
+        if len(above) and len(below) and above.min() <= 205 and below.min() <= 205:
+            gutters.append((int(y0), int(y1)))
+
+    # Dải đen phải dày để không nhầm một đường kẻ hoặc vùng tô đen trong tranh.
+    for y0, y1 in runs(row_mean <= dark_mean):
+        if y1 - y0 + 1 >= 4 and y0 >= 0.06 * h and y1 <= 0.94 * h:
+            gutters.append((int(y0), int(y1)))
+
+    # Gộp các ứng viên chạm nhau và sắp theo chiều đọc.
+    merged = []
+    for y0, y1 in sorted(gutters):
+        if merged and y0 <= merged[-1][1] + 1:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], y1))
+        else:
+            merged.append((y0, y1))
+    return merged
+
+
 def filter_boxes(boxes, page_h, page_w, min_frac=0.03, max_frac=0.95):
     """Giu box co dien tich bbox trong [min_frac, max_frac] dien tich trang
     (loai chu thoai/bui ran va vien ngoai trang)."""
